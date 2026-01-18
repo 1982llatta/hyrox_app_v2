@@ -1,0 +1,8 @@
+{
+  "name": "Hyrox AI Coach",
+  "description": "An AI-powered coaching platform for Hyrox athletes to track performance, log workouts, and receive personalized training advice from Coach Alex.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
