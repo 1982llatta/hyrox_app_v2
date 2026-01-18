@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { LayoutDashboard, History, MessageSquare, Trophy, Settings, LogOut, Dumbbell, Timer, Flame, Zap, Link as LinkIcon, User } from 'lucide-react';
+import { LayoutDashboard, History, MessageSquare, Trophy, Settings, LogOut, Dumbbell, Timer, Flame, Zap, Link as LinkIcon, User, CalendarDays } from 'lucide-react';
 
 export const NAVIGATION_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+  { id: 'plans', label: 'Training Plans', icon: <CalendarDays size={20} /> },
   { id: 'history', label: 'History', icon: <History size={20} /> },
   { id: 'coach', label: 'AI Coach', icon: <MessageSquare size={20} /> },
   { id: 'integrations', label: 'Integrations', icon: <LinkIcon size={20} /> },
-  { id: 'profile', label: 'Profile', icon: <User size={20} /> },
 ];
 
 export const SESSION_TYPE_CONFIG = {
@@ -17,4 +17,5 @@ export const SESSION_TYPE_CONFIG = {
   endurance: { label: 'Endurance Session', icon: <History className="text-purple-400" />, color: 'bg-purple-400/10' },
   skill: { label: 'Skill Work', icon: <Settings className="text-yellow-400" />, color: 'bg-yellow-400/10' },
   simulation: { label: 'Hyrox Simulation', icon: <Flame className="text-red-400" />, color: 'bg-red-400/10' },
+  rest: { label: 'Rest Day', icon: <History className="text-gray-400" />, color: 'bg-gray-100' },
 };

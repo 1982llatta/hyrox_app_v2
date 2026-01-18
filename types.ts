@@ -10,6 +10,12 @@ export enum UserRole {
   COACH = 'coach'
 }
 
+export enum FitnessTrend {
+  IMPROVING = 'improving',
+  STABLE = 'stable',
+  DECLINING = 'declining'
+}
+
 export enum SessionType {
   STRENGTH = 'strength',
   CARDIO = 'cardio',
@@ -17,6 +23,13 @@ export enum SessionType {
   ENDURANCE = 'endurance',
   SKILL = 'skill',
   SIMULATION = 'simulation'
+}
+
+export enum TrainingGoal {
+  RACE_PEAK = 'Race Peak / Competition Prep',
+  STRENGTH_BASE = 'Strength & Power Base',
+  AEROBIC_ENGINE = 'Aerobic Engine / Endurance',
+  TRANSITION_SPEED = 'Station Transitions & Skills'
 }
 
 export interface StrengthSet {
@@ -42,9 +55,25 @@ export interface TrainingSession {
   notes?: string;
   workout_date: string;
   created_at: string;
-  // Detailed metrics
   strength_data?: StrengthSet[];
   cardio_data?: CardioMetrics;
+}
+
+export interface PlanDay {
+  day: string;
+  title: string;
+  type: SessionType | 'rest';
+  description: string;
+  duration: string;
+  exercises?: string[];
+}
+
+export interface TrainingPlan {
+  id: string;
+  athlete_id: string;
+  goal: string;
+  created_at: string;
+  days: PlanDay[];
 }
 
 export interface UserProfile {
@@ -54,8 +83,10 @@ export interface UserProfile {
   experience_level?: ExperienceLevel;
   age?: number;
   gender?: string;
+  location?: string;
   hyrox_pb?: string;
   fitness_score: number;
+  fitness_trend: FitnessTrend;
   integrations: {
     strava: boolean;
     garmin: boolean;

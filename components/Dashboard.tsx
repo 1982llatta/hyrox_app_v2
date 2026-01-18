@@ -1,241 +1,274 @@
 
-import React from 'react';
-import { BarChart, Bar, Cell, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrainingSession, UserProfile, SessionType } from '../types';
-import { Play, ArrowUpRight, CheckCircle2, MoreHorizontal, ChevronDown, Clock, Dumbbell } from 'lucide-react';
+import React, { useState } from 'react';
+import { BarChart, Bar, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, LineChart, Line } from 'recharts';
+import { TrainingSession, UserProfile, FitnessTrend } from '../types';
+// Add missing Flame import
+import { Play, ArrowUpRight, MessageSquare, LayoutGrid, Calendar, TrendingUp, TrendingDown, Minus, Dumbbell, Trophy, Activity, Timer, Zap, ArrowRight, Flame } from 'lucide-react';
+import { SESSION_TYPE_CONFIG } from '../constants';
 
 interface DashboardProps {
   athlete: UserProfile;
   sessions: TrainingSession[];
   onLogWorkout: () => void;
+  onNavigate: (tab: string) => void;
 }
 
-const mockChartData = [
-  { name: 'S', value: 10 },
-  { name: 'M', value: 45 },
-  { name: 'T', value: 25 },
-  { name: 'W', value: 50 },
-  { name: 'T', value: 40 },
-  { name: 'F', value: 70 },
-  { name: 'S', value: 20 },
+const weeklyData = [
+  { name: 'Mon', score: 78, volume: 450, pace: 5.40 },
+  { name: 'Tue', score: 79, volume: 800, pace: 5.35 },
+  { name: 'Wed', score: 79, volume: 0, pace: 5.42 },
+  { name: 'Thu', score: 81, volume: 1200, pace: 5.28 },
+  { name: 'Fri', score: 80, volume: 300, pace: 5.20 },
+  { name: 'Sat', score: 83, volume: 2100, pace: 5.15 },
+  { name: 'Sun', score: 84, volume: 0, pace: 5.08 },
 ];
 
-const Dashboard: React.FC<DashboardProps> = ({ athlete, sessions, onLogWorkout }) => {
-  return (
-    <div className="space-y-8 animate-in fade-in duration-1000">
-      {/* Welcome Header & Stats */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-4">
-        <div>
-          <h1 className="text-5xl font-semibold tracking-tighter mb-2">Welcome in, {athlete.full_name}</h1>
-          <div className="flex items-center gap-4 mt-6">
-            <div className="space-y-2">
-              <p className="text-[10px] uppercase font-black text-gray-400">Strength</p>
-              <div className="flex items-center gap-3">
-                <div className="w-32 h-6 bg-[#1A1A1A] rounded-full flex items-center px-3">
-                  <span className="text-white text-[10px] font-bold">85%</span>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-[10px] uppercase font-black text-gray-400">Cardio</p>
-              <div className="w-32 h-6 bg-accent rounded-full flex items-center px-3">
-                 <span className="text-black text-[10px] font-bold">72%</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-[10px] uppercase font-black text-gray-400">Output</p>
-              <div className="w-32 h-6 border-2 border-gray-300 rounded-full flex items-center px-3">
-                 <span className="text-gray-500 text-[10px] font-bold">10%</span>
-              </div>
-            </div>
-          </div>
-        </div>
+const monthlyData = [
+  { name: 'Week 1', score: 72, volume: 4500, pace: 5.50 },
+  { name: 'Week 2', score: 75, volume: 5200, pace: 5.42 },
+  { name: 'Week 3', score: 79, volume: 4800, pace: 5.38 },
+  { name: 'Week 4', score: 84, volume: 6100, pace: 5.12 },
+];
 
-        <div className="flex items-center gap-12 bg-white/40 p-6 rounded-3xl border border-white/50 backdrop-blur-sm">
-           <div className="text-center">
-             <h3 className="text-4xl font-semibold tracking-tighter flex items-center gap-2">
-               <span className="w-2 h-2 bg-accent rounded-full"></span> 78
-             </h3>
-             <p className="text-[10px] uppercase font-black text-gray-400">Total Workouts</p>
-           </div>
-           <div className="text-center">
-             <h3 className="text-4xl font-semibold tracking-tighter flex items-center gap-2">
-               <span className="w-2 h-2 bg-accent rounded-full"></span> 56
-             </h3>
-             <p className="text-[10px] uppercase font-black text-gray-400">Personal Bests</p>
-           </div>
-           <div className="text-center">
-             <h3 className="text-4xl font-semibold tracking-tighter flex items-center gap-2">
-               <span className="w-2 h-2 bg-accent rounded-full"></span> 203
-             </h3>
-             <p className="text-[10px] uppercase font-black text-gray-400">Volume Hours</p>
-           </div>
+const Dashboard: React.FC<DashboardProps> = ({ athlete, sessions, onLogWorkout, onNavigate }) => {
+  const [trendView, setTrendView] = useState<'fitness' | 'strength' | 'pace'>('fitness');
+  const [timeframe, setTimeframe] = useState<'weekly' | 'monthly'>('weekly');
+  const recentSessions = sessions.slice(0, 5);
+  
+  const currentData = timeframe === 'weekly' ? weeklyData : monthlyData;
+
+  const getScoreCategory = (score: number) => {
+    if (score < 40) return { label: "Building Foundation", color: "text-red-500", bg: "bg-red-50" };
+    if (score <= 70) return { label: "Progressing Well", color: "text-yellow-600", bg: "bg-yellow-50" };
+    return { label: "Competition Ready", color: "text-green-600", bg: "bg-green-50" };
+  };
+
+  const category = getScoreCategory(athlete.fitness_score);
+
+  const getTrendIcon = (trend: FitnessTrend) => {
+    switch (trend) {
+      case FitnessTrend.IMPROVING: return <TrendingUp className="text-green-500" size={18} />;
+      case FitnessTrend.DECLINING: return <TrendingDown className="text-red-500" size={18} />;
+      default: return <Minus className="text-gray-400" size={18} />;
+    }
+  };
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-[#1A1A1A] text-white p-4 rounded-2xl shadow-2xl border border-white/10">
+          <p className="text-[10px] font-black uppercase tracking-widest text-accent mb-2">{label}</p>
+          <p className="text-lg font-black">{payload[0].value}{trendView === 'pace' ? "'" : trendView === 'strength' ? 'kg' : '%'}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-1000 max-w-7xl mx-auto pb-20">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <div>
+          <h1 className="text-5xl font-semibold tracking-tighter mb-1">Elite Protocol, {athlete.full_name}</h1>
+          <p className="text-gray-400 text-sm font-medium italic">"The architecture of speed begins with consistency."</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onLogWorkout}
+            className="bg-[#1A1A1A] text-white px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest shadow-xl hover:bg-accent hover:text-black transition-all flex items-center gap-3"
+          >
+            <Play size={16} fill="currentColor" /> Log Performance
+          </button>
         </div>
       </div>
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Profile Column */}
-        <div className="lg:col-span-3 space-y-6">
-          <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-soft border border-gray-100">
-            <div className="h-[300px] relative">
-              <img src="https://picsum.photos/seed/athlete_main/600/800" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-8 text-white">
-                <h2 className="text-2xl font-bold">{athlete.full_name}</h2>
-                <p className="text-xs opacity-70">Hyrox {athlete.experience_level}</p>
-                <div className="mt-4 flex justify-between items-center">
-                   <div className="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-bold border border-white/30">$1,200 <span className="text-[10px] opacity-60">Volume</span></div>
+        {/* Left Stats Column */}
+        <div className="lg:col-span-4 space-y-8">
+          <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-8 text-[#F7F4E9] group-hover:text-accent/10 transition-colors">
+              <Zap size={120} />
+            </div>
+            <div className="flex justify-between items-start mb-6 relative z-10">
+              <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest">Athlete Score</h3>
+              {getTrendIcon(athlete.fitness_trend)}
+            </div>
+            
+            <div className="space-y-6 relative z-10">
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-6xl font-black tracking-tighter">{athlete.fitness_score}<span className="text-xl font-bold text-gray-300">/100</span></p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">Global Performance</p>
+                </div>
+                <div className={`${category.bg} ${category.color} px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest`}>
+                  {category.label}
                 </div>
               </div>
-            </div>
-            <div className="p-4 space-y-2">
-              {['Strength Benchmarks', 'Device Integration', 'Compensation Summary', 'Athlete Benefits'].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-4 bg-[#F9F9F9] rounded-2xl cursor-pointer hover:bg-accent transition-all group">
-                  <span className="text-xs font-bold text-gray-600 group-hover:text-black">{item}</span>
-                  <ChevronDown size={14} className="text-gray-400" />
+
+              <div className="pt-6 border-t border-gray-50 flex justify-between items-center">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Hyrox PB</p>
+                  <div className="flex items-center gap-2">
+                    <Trophy size={16} className="text-accent" />
+                    <span className="text-2xl font-black tracking-tighter">{athlete.hyrox_pb || '00:00:00'}</span>
+                  </div>
                 </div>
-              ))}
+                <button onClick={() => onNavigate('plans')} className="p-3 bg-gray-50 rounded-full hover:bg-accent transition-all">
+                  <ArrowRight size={18} />
+                </button>
+              </div>
             </div>
+          </div>
+
+          <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100 grid grid-cols-2 gap-4">
+             {[
+              { label: 'Workouts', val: sessions.length, sub: 'Total Logs', icon: <Activity className="text-accent" /> },
+              { label: 'Intensity', val: '7.8', sub: 'Avg. RPE', icon: <Flame className="text-orange-400" /> },
+              { label: 'Time', val: '12h', sub: 'Last 30d', icon: <Timer className="text-blue-400" /> },
+              { label: 'Streak', val: '14', sub: 'Days', icon: <Zap className="text-yellow-400" /> },
+             ].map((stat, i) => (
+               <div key={i} className="bg-[#F9F9F9] p-6 rounded-[2rem] border border-gray-50">
+                 <div className="flex items-center gap-3 mb-4">{stat.icon}</div>
+                 <p className="text-2xl font-black tracking-tighter">{stat.val}</p>
+                 <p className="text-[9px] font-black uppercase text-gray-400 tracking-widest">{stat.sub}</p>
+               </div>
+             ))}
           </div>
         </div>
 
-        {/* Center Content */}
-        <div className="lg:col-span-6 space-y-6">
-          <div className="grid grid-cols-2 gap-6">
-            {/* Volume Graph */}
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100">
-              <div className="flex justify-between items-start mb-6">
-                 <div>
-                   <h3 className="text-lg font-bold">Progress</h3>
-                   <p className="text-xs text-gray-400">Volume this week</p>
-                 </div>
-                 <button className="p-3 bg-[#F9F9F9] rounded-full border border-gray-100">
-                    <ArrowUpRight size={14} />
-                 </button>
+        {/* Center/Main Chart Column */}
+        <div className="lg:col-span-8 space-y-8">
+          <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
+              <div>
+                <h3 className="text-2xl font-black tracking-tighter uppercase">Trend Analysis</h3>
+                <div className="flex items-center gap-4 mt-2">
+                  <div className="flex bg-[#F9F9F9] p-1 rounded-full border border-gray-100">
+                    <button onClick={() => setTimeframe('weekly')} className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase transition-all ${timeframe === 'weekly' ? 'bg-white shadow-sm text-black' : 'text-gray-400'}`}>Weekly</button>
+                    <button onClick={() => setTimeframe('monthly')} className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase transition-all ${timeframe === 'monthly' ? 'bg-white shadow-sm text-black' : 'text-gray-400'}`}>Monthly</button>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-end gap-1 mb-8">
-                 <span className="text-4xl font-black">6.1 h</span>
-                 <span className="text-[10px] text-gray-400 uppercase font-black mb-1">Work Time</span>
+              <div className="flex bg-[#F9F9F9] p-1.5 rounded-[1.5rem] border border-gray-100 overflow-x-auto scrollbar-hide">
+                {[
+                  { id: 'fitness', label: 'Fitness', icon: <Activity size={14} /> },
+                  { id: 'strength', label: 'Volume', icon: <Dumbbell size={14} /> },
+                  { id: 'pace', label: 'Pace', icon: <Timer size={14} /> },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setTrendView(tab.id as any)}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-[1.2rem] text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                      trendView === tab.id ? 'bg-[#1A1A1A] text-white shadow-xl' : 'text-gray-400 hover:text-black'
+                    }`}
+                  >
+                    {tab.icon} {tab.label}
+                  </button>
+                ))}
               </div>
-              <div className="h-32 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={mockChartData}>
-                    <Bar dataKey="value" radius={[10, 10, 10, 10]}>
-                      {mockChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={index === 5 ? '#FFD541' : '#1A1A1A'} />
+            </div>
+
+            <div className="h-72 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                {trendView === 'fitness' ? (
+                  <AreaChart data={currentData}>
+                    <defs>
+                      <linearGradient id="colorFitness" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#FFD541" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#FFD541" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9CA3AF', fontWeight: 'bold' }} dy={10} />
+                    <YAxis hide domain={['dataMin - 5', 'dataMax + 5']} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#FFD541', strokeWidth: 2 }} />
+                    <Area type="monotone" dataKey="score" stroke="#FFD541" strokeWidth={4} fillOpacity={1} fill="url(#colorFitness)" animationDuration={1500} />
+                  </AreaChart>
+                ) : trendView === 'strength' ? (
+                  <BarChart data={currentData}>
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9CA3AF', fontWeight: 'bold' }} dy={10} />
+                    <YAxis hide />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
+                    <Bar dataKey="volume" radius={[8, 8, 8, 8]} animationDuration={1500}>
+                      {currentData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={index === currentData.length - 1 ? '#FFD541' : '#1A1A1A'} />
                       ))}
                     </Bar>
                   </BarChart>
-                </ResponsiveContainer>
-              </div>
+                ) : (
+                  <LineChart data={currentData}>
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9CA3AF', fontWeight: 'bold' }} dy={10} />
+                    <YAxis hide domain={['dataMin - 0.2', 'dataMax + 0.2']} reversed />
+                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#1A1A1A', strokeWidth: 2 }} />
+                    <Line type="monotone" dataKey="pace" stroke="#1A1A1A" strokeWidth={4} dot={{ fill: '#FFD541', stroke: '#1A1A1A', strokeWidth: 2, r: 6 }} animationDuration={1500} />
+                  </LineChart>
+                )}
+              </ResponsiveContainer>
             </div>
 
-            {/* Time Tracker */}
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100 relative">
-              <div className="flex justify-between items-start">
-                 <h3 className="text-lg font-bold">Session Timer</h3>
-                 <button className="p-3 bg-[#F9F9F9] rounded-full border border-gray-100"><ArrowUpRight size={14} /></button>
+            <div className="grid grid-cols-3 gap-8 mt-10 pt-10 border-t border-gray-50">
+              <div className="text-center">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Threshold Shift</p>
+                <p className="text-2xl font-black tracking-tighter">+{timeframe === 'weekly' ? '2.4' : '6.8'}%</p>
               </div>
-              <div className="flex flex-col items-center justify-center py-4">
-                 <div className="w-32 h-32 border-8 border-[#F9F9F9] rounded-full flex flex-col items-center justify-center relative">
-                    <div className="absolute inset-0 border-8 border-accent rounded-full border-t-transparent animate-spin duration-[10s]"></div>
-                    <span className="text-2xl font-black tracking-tighter">02:35</span>
-                    <span className="text-[8px] uppercase font-black text-gray-400">Work Time</span>
-                 </div>
+              <div className="text-center border-x border-gray-100">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Cycle Volume</p>
+                <p className="text-2xl font-black tracking-tighter">{timeframe === 'weekly' ? '4.8k' : '22k'}<span className="text-[10px] text-gray-300 ml-1">KG</span></p>
               </div>
-              <div className="flex justify-center gap-4">
-                 <button className="p-3 bg-white border border-gray-200 rounded-full shadow-sm hover:bg-accent transition-all"><Play size={16} fill="currentColor" /></button>
-                 <button className="p-3 bg-white border border-gray-200 rounded-full shadow-sm">
-                   <div className="flex gap-0.5"><div className="w-1 h-3 bg-black"></div><div className="w-1 h-3 bg-black"></div></div>
-                 </button>
+              <div className="text-center">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Transition Eff.</p>
+                <p className="text-2xl font-black tracking-tighter">Top 15%</p>
               </div>
-              <button className="absolute bottom-8 right-8 p-3 bg-[#1A1A1A] text-white rounded-full"><Clock size={16} /></button>
             </div>
           </div>
 
-          {/* Training Calendar */}
-          <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100">
-             <div className="flex justify-between items-center mb-8">
-                <div className="flex items-center gap-6">
-                   <span className="text-xs font-black uppercase text-gray-400">August</span>
-                   <span className="text-lg font-black tracking-tighter">September 2024</span>
-                   <span className="text-xs font-black uppercase text-gray-400">October</span>
-                </div>
-             </div>
-             <div className="grid grid-cols-7 gap-4 mb-8">
-               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
-                 <div key={day} className="text-center">
-                   <p className="text-[10px] uppercase font-bold text-gray-400 mb-2">{day}</p>
-                   <p className={`text-sm font-black ${i === 3 ? 'text-accent' : ''}`}>{22 + i}</p>
-                 </div>
-               ))}
-             </div>
-             <div className="relative h-24 bg-[#F9F9F9] rounded-2xl flex items-center px-8 border border-gray-100 overflow-hidden">
-                <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#1A1A1A]"></div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-sm">Coach Strategy Session</h4>
-                  <p className="text-xs text-gray-400">Discuss progress on station 5 & 6</p>
-                </div>
-                <div className="flex -space-x-2">
-                   <div className="w-8 h-8 rounded-full border-2 border-white bg-accent"></div>
-                   <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-400"></div>
-                </div>
-             </div>
-          </div>
-        </div>
+          {/* Quick Actions & Recent Activity Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-[#1A1A1A] rounded-[2.5rem] p-8 text-white relative overflow-hidden flex flex-col justify-between group">
+              <div className="absolute top-0 right-0 p-8 text-accent opacity-10 group-hover:opacity-20 transition-opacity"><MessageSquare size={120} /></div>
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-widest text-accent mb-6">AI Performance Insight</h3>
+                <p className="text-lg font-medium leading-tight relative z-10">
+                  "Your {trendView} trajectory is {athlete.fitness_trend === FitnessTrend.IMPROVING ? 'optimizing' : 'stabilizing'}. I recommend focusing on {athlete.experience_level === 'beginner' ? 'aerobic base' : 'threshold transitions'} for the next 72 hours."
+                </p>
+              </div>
+              <button 
+                onClick={() => onNavigate('coach')}
+                className="mt-8 text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:text-accent transition-all self-start relative z-10"
+              >
+                Deep Analysis <ArrowUpRight size={14} />
+              </button>
+            </div>
 
-        {/* Right Column */}
-        <div className="lg:col-span-3 space-y-6">
-           <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100">
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100">
               <div className="flex justify-between items-center mb-6">
-                 <h3 className="text-lg font-bold">Training Tasks</h3>
-                 <span className="text-3xl font-black tracking-tighter">18%</span>
+                <h3 className="text-lg font-bold">Recent Output</h3>
+                <button onClick={() => onNavigate('history')} className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black">View Archives</button>
               </div>
-              <div className="flex gap-2 mb-8">
-                 <div className="flex-1 h-10 bg-accent rounded-xl flex items-center justify-center text-[10px] font-black uppercase">Task</div>
-                 <div className="flex-1 h-10 bg-[#1A1A1A] rounded-xl"></div>
-                 <div className="flex-1 h-10 bg-gray-200 rounded-xl"></div>
-              </div>
-
-              <div className="bg-[#1A1A1A] rounded-[2rem] p-6 text-white space-y-4">
-                 <div className="flex justify-between items-center mb-4">
-                    <h4 className="text-sm font-bold">Session Tasks</h4>
-                    <span className="text-lg font-black opacity-60">2/8</span>
-                 </div>
-                 {[
-                   { title: 'Sled Push Prep', time: 'Sep 13, 08:30', done: true },
-                   { title: 'Aerobic Base Run', time: 'Sep 13, 10:30', done: true },
-                   { title: 'Nutrition Update', time: 'Sep 13, 13:00', done: false },
-                   { title: 'Discuss Goals', time: 'Sep 13, 14:45', done: false },
-                   { title: 'Mobility Review', time: 'Sep 13, 16:30', done: false }
-                 ].map((task, i) => (
-                   <div key={i} className="flex items-center gap-3 py-2 border-b border-white/10 last:border-0 opacity-80 hover:opacity-100 transition-opacity">
-                      <div className={`p-2 rounded-xl ${task.done ? 'bg-white/10' : 'bg-white/5 text-white/40'}`}>
-                         <Dumbbell size={14} />
+              <div className="space-y-3">
+                {recentSessions.map((session, i) => {
+                  const config = SESSION_TYPE_CONFIG[session.session_type];
+                  return (
+                    <div key={session.id} className="flex items-center gap-4 p-4 rounded-2xl bg-[#F9F9F9] hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all group">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm ${config.color}`}>
+                        {config.icon}
                       </div>
                       <div className="flex-1">
-                        <p className={`text-[10px] font-bold ${task.done ? 'line-through opacity-50' : ''}`}>{task.title}</p>
-                        <p className="text-[8px] opacity-40 uppercase tracking-widest">{task.time}</p>
+                        <h4 className="font-bold text-xs truncate uppercase tracking-tight">{config.label}</h4>
+                        <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest">{session.duration_minutes} MINS</p>
                       </div>
-                      {task.done && <CheckCircle2 size={16} className="text-accent" />}
-                      {!task.done && <div className="w-4 h-4 rounded-full border-2 border-white/20"></div>}
-                   </div>
-                 ))}
+                      <div className="text-right">
+                        <span className="text-sm font-black tracking-tighter">{session.performance_score}%</span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-           </div>
+            </div>
+          </div>
         </div>
-
       </div>
-
-      {/* Floating Action Button */}
-      <button 
-        onClick={onLogWorkout}
-        className="fixed bottom-10 right-10 bg-[#1A1A1A] text-white w-20 h-20 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center group"
-      >
-         <Play size={24} fill="currentColor" />
-         <span className="absolute right-full mr-4 bg-accent text-black px-4 py-2 rounded-2xl font-black text-xs uppercase whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all">New Session</span>
-      </button>
     </div>
   );
 };
