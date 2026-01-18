@@ -109,7 +109,7 @@ const WorkoutLog: React.FC<WorkoutLogProps> = ({ onClose, onSave }) => {
             ))}
           </div>
 
-          <button onClick={onClose} className="text-[10px] font-black uppercase tracking-widest text-gray-300 hover:text-red-500 transition-colors py-4">
+          <button onClick={onClose} className="text-[10px] font-black uppercase tracking-widest text-gray-300 hover:text-red-500 transition-colors py-4 mt-auto">
             Discard entry
           </button>
         </div>
@@ -199,23 +199,23 @@ const WorkoutLog: React.FC<WorkoutLogProps> = ({ onClose, onSave }) => {
                           onClick={() => setShowLibrary(true)}
                           className="bg-white border border-gray-200 text-black px-6 py-3 rounded-full text-[10px] font-black uppercase flex items-center gap-2 hover:bg-accent transition-all shadow-sm"
                         >
-                          <BookOpen size={14} /> Library
+                          <BookOpen size={14} /> View Library
                         </button>
                         <button 
                           type="button" 
                           onClick={() => addExercise()}
                           className="bg-[#1A1A1A] text-white px-6 py-3 rounded-full text-[10px] font-black uppercase flex items-center gap-2 hover:bg-accent hover:text-black transition-all shadow-xl"
                         >
-                          <Plus size={14} /> Add Protocol
+                          <Plus size={14} /> New Manual Entry
                         </button>
                       </div>
                     </div>
 
-                    {/* Quick Add Section */}
+                    {/* Quick Add Section for Hyrox Stations */}
                     <div className="bg-white rounded-[2.5rem] p-8 shadow-soft border border-gray-100">
                       <div className="flex items-center gap-2 mb-6">
                         <Activity size={14} className="text-accent" />
-                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Quick Add Stations</h4>
+                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Official Hyrox Stations</h4>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         {hyroxStations.map((station) => (
@@ -225,7 +225,7 @@ const WorkoutLog: React.FC<WorkoutLogProps> = ({ onClose, onSave }) => {
                             onClick={() => addExercise(station.name)}
                             className="bg-[#F7F4E9] border border-transparent hover:border-accent p-3 rounded-2xl flex items-center gap-3 transition-all group"
                           >
-                            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[10px] font-black shadow-sm group-hover:bg-accent group-hover:text-black">
+                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-[10px] font-black shadow-sm group-hover:bg-accent group-hover:text-black transition-colors">
                                {station.name.substring(0, 2).toUpperCase()}
                             </div>
                             <span className="text-[9px] font-black uppercase tracking-tight text-gray-700 truncate">{station.name}</span>
@@ -251,7 +251,7 @@ const WorkoutLog: React.FC<WorkoutLogProps> = ({ onClose, onSave }) => {
                           <div className="grid grid-cols-12 gap-6 items-center">
                             <div className="col-span-12 lg:col-span-5">
                               <input 
-                                placeholder="EXERCISE (E.G. BURPEE BROAD JUMP)" 
+                                placeholder="EXERCISE NAME" 
                                 value={item.exercise}
                                 onChange={(e) => updateStrength(idx, 'exercise', e.target.value)}
                                 className="bg-[#F7F4E9] w-full text-[10px] font-black px-6 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent border border-transparent"
@@ -412,7 +412,7 @@ const WorkoutLog: React.FC<WorkoutLogProps> = ({ onClose, onSave }) => {
           </form>
 
           {/* Footer Actions */}
-          <div className="p-10 bg-white border-t border-gray-100 flex gap-6 items-center">
+          <div className="p-10 bg-white border-t border-gray-100 flex gap-6 items-center mt-auto">
             {activeStep > 1 && (
               <button 
                 type="button"

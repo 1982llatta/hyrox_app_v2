@@ -78,7 +78,7 @@ export const EXERCISES: Exercise[] = [
     thumbnailUrl: 'https://images.unsplash.com/photo-1590239068531-48d1621758ff?auto=format&fit=crop&q=80&w=800',
   },
   {
-    id: '7',
+    id: 'deadlift',
     name: 'Deadlift',
     category: 'Strength',
     description: 'Fundamental pulling movement. Essential for building the posterior chain for sled stations.',
@@ -86,7 +86,7 @@ export const EXERCISES: Exercise[] = [
     thumbnailUrl: 'https://images.unsplash.com/photo-1517838276537-2222d214a16b?auto=format&fit=crop&q=80&w=800',
   },
   {
-    id: '8',
+    id: 'thrusters',
     name: 'Thrusters',
     category: 'Strength',
     description: 'Compound movement combining a front squat into an overhead press.',
@@ -112,9 +112,8 @@ const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ onClose, onSelect }) 
 
   const handlePlayVideo = () => {
     setIsPlaying(true);
-    // Simulate video loading/playing
     setTimeout(() => {
-      // In a real app, this would start a video player
+      // Simulation of a video loading
     }, 2000);
   };
 
@@ -269,12 +268,20 @@ const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ onClose, onSelect }) 
                </div>
                
                {onSelect && (
-                 <button 
-                   onClick={() => onSelect(selectedExercise.name)}
-                   className="w-full bg-[#1A1A1A] text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-accent hover:text-black transition-all shadow-xl flex items-center justify-center gap-3"
-                 >
-                   Apply Protocol to Session <Activity size={18} />
-                 </button>
+                 <div className="pt-8 mt-8 border-t border-gray-100 flex gap-4">
+                    <button 
+                      onClick={() => onSelect(selectedExercise.name)}
+                      className="flex-1 bg-[#1A1A1A] text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-accent hover:text-black transition-all shadow-xl flex items-center justify-center gap-3"
+                    >
+                      Add To Workout Log <Activity size={18} />
+                    </button>
+                    <button 
+                      onClick={onClose}
+                      className="px-10 bg-gray-50 text-gray-400 py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-all"
+                    >
+                      Cancel
+                    </button>
+                 </div>
                )}
             </div>
           )}
