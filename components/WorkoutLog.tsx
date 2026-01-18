@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { SessionType, TrainingSession, StrengthSet } from '../types';
-import { X, Save, Clock, Zap, Info, Flame, Plus, Trash2, Ruler, Wind } from 'lucide-react';
+import { X, Save, Clock, Zap, Flame, Plus, Trash2, Ruler, Wind } from 'lucide-react';
 import { SESSION_TYPE_CONFIG } from '../constants';
 
 interface WorkoutLogProps {
@@ -50,95 +50,92 @@ const WorkoutLog: React.FC<WorkoutLogProps> = ({ onClose, onSave }) => {
   const isCardioMode = [SessionType.CARDIO, SessionType.SIMULATION, SessionType.ENDURANCE, SessionType.INTERVAL].includes(formData.session_type);
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in zoom-in duration-300">
-      <div className="bg-[#141414] w-full max-w-2xl rounded-[2.5rem] border border-[#262626] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-        <div className="p-8 border-b border-[#262626] flex justify-between items-center bg-gradient-to-r from-accent/5 to-transparent">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-[100] animate-in fade-in zoom-in duration-300">
+      <div className="bg-[#F7F4E9] w-full max-w-2xl rounded-[3rem] border border-white shadow-2xl overflow-hidden">
+        <div className="p-10 border-b border-gray-200 flex justify-between items-center bg-white">
           <div>
-            <h2 className="text-2xl font-black uppercase">Track Session</h2>
-            <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Granular data yields elite results</p>
+            <h2 className="text-3xl font-black uppercase tracking-tighter">Session Entry</h2>
+            <p className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-black mt-1">Data-driven performance tracking</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-[#1A1A1A] rounded-full transition-colors">
-            <X size={24} className="text-gray-500" />
+          <button onClick={onClose} className="p-4 hover:bg-gray-100 rounded-full transition-colors border border-gray-100 shadow-sm">
+            <X size={20} className="text-gray-500" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-8 max-h-[75vh] overflow-y-auto custom-scrollbar">
-          {/* Workout Type */}
+        <form onSubmit={handleSubmit} className="p-10 space-y-10 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          {/* Modality Selector */}
           <div className="space-y-4">
-            <label className="text-xs font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
-              <Zap size={14} className="text-accent" />
-              Modality
-            </label>
-            <div className="grid grid-cols-3 gap-2">
+            <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 ml-2">Training Modality</label>
+            <div className="grid grid-cols-3 gap-3">
               {Object.entries(SESSION_TYPE_CONFIG).map(([key, config]) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => setFormData({ ...formData, session_type: key as SessionType })}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
+                  className={`flex flex-col items-center gap-3 p-6 rounded-[2rem] border-2 transition-all ${
                     formData.session_type === key 
-                      ? 'border-accent bg-accent/5 text-accent' 
-                      : 'border-[#262626] bg-[#0C0C0C] text-gray-500'
+                      ? 'border-accent bg-white shadow-soft' 
+                      : 'border-transparent bg-white/40 text-gray-400 grayscale'
                   }`}
                 >
-                  <span className="text-xl">{config.icon}</span>
-                  <span className="text-[9px] font-black uppercase">{config.label.split(' ')[0]}</span>
+                  <span className="text-2xl">{config.icon}</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest">{config.label.split(' ')[0]}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Contextual Inputs */}
+          {/* Detailed Inputs */}
           {isStrengthMode && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-black uppercase text-gray-500">Exercise Breakdown</label>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center px-2">
+                <label className="text-[10px] font-black uppercase text-gray-400">Exercise Protocol</label>
                 <button 
                   type="button" 
                   onClick={addExercise}
-                  className="text-[10px] font-black uppercase text-accent flex items-center gap-1 hover:opacity-70"
+                  className="bg-accent text-black px-4 py-2 rounded-full text-[10px] font-black uppercase flex items-center gap-2 hover:scale-105 transition-all shadow-sm"
                 >
-                  <Plus size={12} /> Add Exercise
+                  <Plus size={12} /> Add Set
                 </button>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {formData.strength_data.map((item, idx) => (
-                  <div key={idx} className="bg-[#0C0C0C] border border-[#262626] rounded-2xl p-4 grid grid-cols-12 gap-3 items-center group">
+                  <div key={idx} className="bg-white rounded-[1.5rem] p-6 grid grid-cols-12 gap-4 items-center shadow-soft border border-gray-100 group">
                     <div className="col-span-5">
                       <input 
-                        placeholder="Exercise" 
+                        placeholder="EXERCISE NAME" 
                         value={item.exercise}
                         onChange={(e) => updateStrength(idx, 'exercise', e.target.value)}
-                        className="bg-transparent border-b border-[#262626] w-full text-xs py-1 focus:outline-none focus:border-accent"
+                        className="bg-[#F7F4E9] w-full text-[10px] font-black px-4 py-3 rounded-xl focus:outline-none focus:border-accent border border-transparent transition-all"
                       />
                     </div>
                     <div className="col-span-2">
                       <input 
-                        type="number" placeholder="Sets" 
+                        type="number" placeholder="S" 
                         value={item.sets}
                         onChange={(e) => updateStrength(idx, 'sets', parseInt(e.target.value))}
-                        className="bg-transparent border-b border-[#262626] w-full text-xs py-1 text-center focus:outline-none"
+                        className="bg-[#F7F4E9] w-full text-[10px] font-black px-2 py-3 rounded-xl text-center focus:outline-none"
                       />
                     </div>
                     <div className="col-span-2">
                       <input 
-                        type="number" placeholder="Reps" 
+                        type="number" placeholder="R" 
                         value={item.reps}
                         onChange={(e) => updateStrength(idx, 'reps', parseInt(e.target.value))}
-                        className="bg-transparent border-b border-[#262626] w-full text-xs py-1 text-center focus:outline-none"
+                        className="bg-[#F7F4E9] w-full text-[10px] font-black px-2 py-3 rounded-xl text-center focus:outline-none"
                       />
                     </div>
                     <div className="col-span-2">
                       <input 
-                        type="number" placeholder="kg" 
+                        type="number" placeholder="KG" 
                         value={item.weight}
                         onChange={(e) => updateStrength(idx, 'weight', parseInt(e.target.value))}
-                        className="bg-transparent border-b border-[#262626] w-full text-xs py-1 text-center focus:outline-none"
+                        className="bg-[#F7F4E9] w-full text-[10px] font-black px-2 py-3 rounded-xl text-center focus:outline-none"
                       />
                     </div>
                     <div className="col-span-1 text-right">
-                      <button type="button" onClick={() => removeStrength(idx)} className="text-gray-700 hover:text-red-500 transition-colors">
-                        <Trash2 size={14} />
+                      <button type="button" onClick={() => removeStrength(idx)} className="text-gray-300 hover:text-red-400 transition-colors">
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -148,91 +145,67 @@ const WorkoutLog: React.FC<WorkoutLogProps> = ({ onClose, onSave }) => {
           )}
 
           {isCardioMode && (
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-[#0C0C0C] border border-[#262626] rounded-2xl p-4">
-                <label className="text-[10px] font-black text-gray-500 uppercase flex items-center gap-1 mb-2">
-                  <Ruler size={10} /> Distance (km)
-                </label>
-                <input 
-                  type="number" step="0.1" 
-                  value={formData.cardio_data.distance}
-                  onChange={(e) => setFormData({ ...formData, cardio_data: { ...formData.cardio_data, distance: parseFloat(e.target.value) } })}
-                  className="bg-transparent w-full font-black text-lg focus:outline-none"
-                />
-              </div>
-              <div className="bg-[#0C0C0C] border border-[#262626] rounded-2xl p-4">
-                <label className="text-[10px] font-black text-gray-500 uppercase flex items-center gap-1 mb-2">
-                  <Wind size={10} /> Pace (min/km)
-                </label>
-                <input 
-                  placeholder="00:00" 
-                  value={formData.cardio_data.pace}
-                  onChange={(e) => setFormData({ ...formData, cardio_data: { ...formData.cardio_data, pace: e.target.value } })}
-                  className="bg-transparent w-full font-black text-lg focus:outline-none"
-                />
-              </div>
-              <div className="bg-[#0C0C0C] border border-[#262626] rounded-2xl p-4">
-                <label className="text-[10px] font-black text-gray-500 uppercase flex items-center gap-1 mb-2">
-                  <Flame size={10} /> Avg HR
-                </label>
-                <input 
-                  type="number" 
-                  value={formData.cardio_data.avgHeartRate}
-                  onChange={(e) => setFormData({ ...formData, cardio_data: { ...formData.cardio_data, avgHeartRate: parseInt(e.target.value) } })}
-                  className="bg-transparent w-full font-black text-lg focus:outline-none"
-                />
-              </div>
+            <div className="grid grid-cols-3 gap-6">
+              {[
+                { label: 'Distance', icon: <Ruler size={14} />, key: 'distance', type: 'number' },
+                { label: 'Pace', icon: <Wind size={14} />, key: 'pace', type: 'text' },
+                { label: 'Heart Rate', icon: <Flame size={14} />, key: 'avgHeartRate', type: 'number' }
+              ].map((field) => (
+                <div key={field.key} className="bg-white rounded-[2rem] p-6 shadow-soft border border-gray-100">
+                  <label className="text-[9px] font-black text-gray-400 uppercase flex items-center gap-2 mb-4">
+                    {field.icon} {field.label}
+                  </label>
+                  <input 
+                    type={field.type}
+                    value={(formData.cardio_data as any)[field.key]}
+                    onChange={(e) => setFormData({ 
+                      ...formData, 
+                      cardio_data: { ...formData.cardio_data, [field.key]: field.type === 'number' ? parseFloat(e.target.value) : e.target.value } 
+                    })}
+                    className="bg-transparent w-full font-black text-xl tracking-tighter focus:outline-none"
+                  />
+                </div>
+              ))}
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 gap-8">
             <div className="space-y-4">
-              <label className="text-xs font-black uppercase text-gray-500">Duration (min)</label>
+              <label className="text-[10px] font-black uppercase text-gray-400 ml-2">Duration (Minutes)</label>
               <input
                 type="number"
                 value={formData.duration_minutes}
                 onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
-                className="w-full bg-[#0C0C0C] border border-[#262626] rounded-2xl py-4 px-6 focus:outline-none focus:border-accent font-black"
+                className="w-full bg-white border border-gray-200 rounded-2xl py-5 px-8 focus:outline-none focus:border-accent font-black tracking-tighter text-xl"
               />
             </div>
             <div className="space-y-4">
-              <label className="text-xs font-black uppercase text-gray-500">Intensity (RPE)</label>
-              <select 
-                value={formData.intensity_level}
-                onChange={(e) => setFormData({ ...formData, intensity_level: parseInt(e.target.value) })}
-                className="w-full bg-[#0C0C0C] border border-[#262626] rounded-2xl py-4 px-6 focus:outline-none focus:border-accent font-black appearance-none"
-              >
-                {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} - {n > 8 ? 'Extreme' : n > 5 ? 'Hard' : 'Moderate'}</option>)}
-              </select>
+              <label className="text-[10px] font-black uppercase text-gray-400 ml-2">Session date</label>
+              <input
+                type="date"
+                value={formData.workout_date}
+                onChange={(e) => setFormData({ ...formData, workout_date: e.target.value })}
+                className="w-full bg-white border border-gray-200 rounded-2xl py-5 px-8 focus:outline-none focus:border-accent font-black text-sm uppercase"
+              />
             </div>
-          </div>
-
-          <div className="space-y-4">
-            <label className="text-xs font-black uppercase text-gray-500">Performance Feedback</label>
-            <textarea
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Analysis of power output, transitions, or mental state..."
-              className="w-full bg-[#0C0C0C] border border-[#262626] rounded-2xl py-4 px-6 focus:outline-none focus:border-accent h-24 resize-none text-xs font-medium"
-            />
           </div>
         </form>
 
-        <div className="p-8 bg-[#1A1A1A] flex gap-4">
+        <div className="p-10 bg-white border-t border-gray-100 flex gap-6">
           <button 
             type="button"
             onClick={onClose}
-            className="flex-1 py-4 px-6 rounded-2xl border border-[#262626] hover:bg-[#262626] transition-all font-black text-xs uppercase"
+            className="flex-1 py-5 px-8 rounded-[1.5rem] border border-gray-200 hover:bg-gray-50 transition-all font-black text-[10px] uppercase tracking-widest"
           >
-            Discard
+            Discard Session
           </button>
           <button 
             type="submit"
             onClick={handleSubmit}
-            className="flex-[2] py-4 px-6 rounded-2xl bg-accent text-black hover:scale-[1.02] active:scale-[0.98] transition-all font-black text-xs uppercase flex items-center justify-center gap-2 shadow-[0_10px_30px_rgba(226,255,84,0.1)]"
+            className="flex-[2] py-5 px-8 rounded-[1.5rem] bg-[#1A1A1A] text-white hover:bg-accent hover:text-black active:scale-[0.98] transition-all font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl"
           >
             <Save size={18} />
-            Commit Session
+            Initialize Record
           </button>
         </div>
       </div>
